@@ -1,6 +1,7 @@
 let size = 10;   //ヴァン面の大きさ
 let firSec = 0; //0: プレイヤーの先行 1: CPUの先行
 let turnFlag = 1;   //1:白 2:黒
+let paceCount = 0;
 let img = new Array("pic/0.bmp", "pic/1.bmp", "pic/2.bmp", "pic/3.bmp");
 let array;
 
@@ -85,7 +86,6 @@ function erase() {
 function turnOver() {
     if (turnFlag == 1) { turnFlag = 2; }
     else { turnFlag = 1; }
-    erase();
 }
 
 function sw(x, y, h, i) {
@@ -159,20 +159,25 @@ function reverse(x, y) {
         }
     }
     turnOver();
+    erase();
+    describe();
+    count();
     return true;
 }
 
 function findAll() {
+    erase();
     let flag = false;
     for (let y = 1; y < size - 1; y++) {
         for (let x = 1; x < size - 1; x++) {
-            flag = find(x, y) || flag;
             if (find(x, y)) {
                 array[x][y] = 3;
+                flag = true;
             }
         }
     }
-
+    describe();
+    return flag;
 }
 
 function randPick() {
@@ -190,36 +195,42 @@ function randPick() {
     return [xar[rand], yar[rand]];
 }
 
+function bot(){
+    if(!findAll()){
+        turnOver();
+        return false;
+    }
+    let xy = randPick();
+    reverse(xy[0], xy[1]);
+}
+
+function player(x,y){
+    if(!findAll()){
+        turnOver();
+        bot();
+        describe();
+        return false;
+    }
+    return reverse(x, y)
+}
+
+
 function main() {
     init();
-
-    if (firSec == 1) {
-        findAll();
-        describe();
-        let xy = randPick();
-        reverse(xy[0], xy[1]);
-        erase();
-    }
     findAll();
-    describe();
-
+    //describe();
+    if (firSec == 1) {
+        bot();
+        findAll();
+    }
     document.body.addEventListener("click", function (event) {
-        count();
         let x = parseInt(event.pageX / 64) + 1;
         let y = parseInt(event.pageY / 64) + 1;
 
-        if (reverse(x, y)) {
-            erase();
-            describe();
-
-            findAll();
-            let xy = randPick();
-            reverse(xy[0], xy[1]);
-            erase();
-            findAll();
-            describe();
-            count();
+        if (player(x, y)) {
+            bot();
         }
+        findAll();
     });
 }
 
